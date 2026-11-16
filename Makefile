@@ -1,15 +1,24 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -MMD -g -Werror=vla
-EXEC = watan
-OBJECTS = board.o  criterion.o	dice.o  fairdice.o  goal.o  loaddice.o  main.o  state.o  student.o textdisplay.o tile.o watan.o playerinput.o
-DEPENDS = ${OBJECTS:.o=.d}
+CXXFLAGS = -std=c++14 -Wall -Werror=vla -g -Iinclude
+EXEC = build/watan
+SOURCES = $(wildcard src/*.cc)
+OBJECTS = $(patsubst src/%.cc,build/%.o,$(SOURCES))
+DEPENDS = $(OBJECTS:.o=.d)
 
-${EXEC}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}
+.PHONY: all clean
 
--include ${DEPENDS}
+all: $(EXEC)
 
-.PHONY: clean
+$(EXEC): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
+
+build:
+	mkdir -p build
+
+build/%.o: src/%.cc | build
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+
+-include $(DEPENDS)
 
 clean:
-	rm ${OBJECTS} ${EXEC} ${DEPENDS}
+	rm -rf build
